@@ -19,12 +19,13 @@ fi
 if [ -z "${1}" ]; then
 	TMP_FILE=1
 	FILE_PATH="/var/tmp/ppb_$(date +%s).html"
+  echo "creation of $FILE_PATH"
 	ansifilter -H &> ${FILE_PATH}
 elif [[ ! -f ${1} ]]; then
 	echo "There is no \"${1}\" file to upload from your system."
 	exit 1
 else
-	FILE_PATH=${1}
+  FILE_PATH=${1}
 fi
 
 # Destination file name
@@ -39,19 +40,39 @@ fi
 if [[ "${FILE_PATH:0:1}" != "/" && "${FILE_PATH:0:1}" != "~" ]]; then
 	FILE_PATH="./${FILE_PATH}"
 fi
-
+echo "files path = $FILE_PATH"
 # Upload
-if rsync -avP "${FILE_PATH}" ${PPB_TARGET_HOST}:"${PPB_PATH_ON_HOST}/${DEST_FILE}" ; then
-	echo Uploaded to: "https://${PPB_HTTP_PATH}/${DEST_FILE}"
+if [ "$PPB_TARGET_HOST" == "local" ]; then
+  if cp "${FILE_PATH}" "${PPB_PATH_ON_HOST}/${DEST_FILE}" ; then
+    echo "cp ${FILE_PATH} ${PPB_PATH_ON_HOST}/${DEST_FILE}"
+    curl -X POST --silent --output /dev/null --show-error --fail "http://109.202.220.6:5000/file/${DEST_FILE}" -d "filename=${DEST_FILE}"
+    echo "curl -X POST http://109.202.220.6:5000/file/${DEST_FILE} -d filename=${DEST_FILE}"
+	  echo Uploaded to: "https://${PPB_HTTP_PATH}/${DEST_FILE}"
+  else
+    echo "ERROR: Could not upload, please check the command below:"
+    echo "cp \"${FILE_PATH}\" \"${PPB_PATH_ON_HOST}/${DEST_FILE}\""
+    if [[ ${TMP_FILE} = 1 ]]; then
+      echo "The \"${FILE_PATH}\" file was created by PPB and intended as temporary."
+      echo "We leave it in place to aid in your debugging, please remember to delete it."
+    fi
+    exit 1
+  fi
 else
-	echo ""
-	echo "ERROR: Could not upload, please check the command below:"
-	echo "rsync -avP \"${FILE_PATH}\" ${PPB_TARGET_HOST}:\"${PPB_PATH_ON_HOST}/${DEST_FILE}\""
-	if [[ ${TMP_FILE} = 1 ]]; then
-		echo "The \"${FILE_PATH}\" file was created by PPB and intended as temporary."
-		echo "We leave it in place to aid in your debugging, please remember to delete it."
-	fi
-	exit 1
+    if rsync -avP "${FILE_PATH}" ${PPB_TARGET_HOST}:"${PPB_PATH_ON_HOST}/${DEST_FILE}" ; then
+        echo "rsync -avP ${FILE_PATH} ${PPB_TARGET_HOST}:${PPB_PATH_ON_HOST}/${DEST_FILE}"
+        curl -X POST --silent --output /dev/null --show-error --fail "http://109.202.220.6:5000/file/${DEST_FILE}" -d "filename=${DEST_FILE}"
+        echo "-X POST http://109.202.220.6:5000/file/${DEST_FILE} -d filename=${DEST_FILE}"
+        echo Uploaded to: "https://${PPB_HTTP_PATH}/${DEST_FILE}"
+    else
+        echo ""
+        echo "ERROR: Could not upload, please check the command below:"
+        echo "rsync -avP \"${FILE_PATH}\" ${PPB_TARGET_HOST}:\"${PPB_PATH_ON_HOST}/${DEST_FILE}\""
+        if [[ ${TMP_FILE} = 1 ]]; then
+            echo "The \"${FILE_PATH}\" file was created by PPB and intended as temporary."
+            echo "We leave it in place to aid in your debugging, please remember to delete it."
+        fi
+        exit 1
+    fi
 fi
 
 # Cleanup
