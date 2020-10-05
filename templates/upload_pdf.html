@@ -1,28 +1,6 @@
 <!doctype html>
-<title>Python Flask File Upload Example</title>
-{#<p>#}
-{#    {% with messages = get_flashed_messages() %}#}
-{#        {% if messages %}#}
-{#            <ul class=flashes>#}
-{#                {% for message in messages %}#}
-{#                    <li>{{ message }}</li>#}
-{#                {% endfor %}#}
-{#            </ul>#}
-{#        {% endif %}#}
-{#    {% endwith %}#}
-{#</p>#}
-{% if filename %}
+
     <object data="{{ url_for('show_static_pdf', filename=filename) }}" type="application/pdf"
             style="min-height:100vh;width:100%"></object>
-{% endif %}
-{#<form method="post" action="/" enctype="multipart/form-data">#}
-{#    <dl>#}
-{#        <p>#}
-{#            <input type="file" name="file" autocomplete="off" onchange="form.submit()" required>#}
-{#        </p>#}
-{#    </dl>#}
-{#    <p>#}
-{#        <input type="submit" value="Submit">#}
-{#    </p>#}
-{#</form>#}
+
 
