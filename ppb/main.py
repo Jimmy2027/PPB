@@ -1,17 +1,13 @@
 import os
-import requests
 from flask import flash, request, redirect, url_for, render_template, send_file
 from werkzeug.utils import secure_filename
 
 from app import app
 
 # todo have different folder for every file type
-#  - add an option to zip a folder and then upload it, local is done -need to do remote version
-#todo check what happens if trying to upload zip file with path
-# todo should be better to use flags in bahs like this: https://medium.com/@Drew_Stokes/bash-argument-parsing-54f3b81a6a8f
-image_extensions = set(['png', 'jpg', 'jpeg', 'gif'])
-video_extensions = set(['mov', 'mp4'])
 
+image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+video_extensions = {'mov', 'mp4'}
 
 def check_extension(filename, extension_list):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in extension_list
@@ -25,7 +21,7 @@ def upload_form():
 def upload_image(filename):
     if request.method == 'POST':
         filename = request.form.get('filename')
-        file = open('static/uploads/{}'.format(filename))
+        file = open('../static/uploads/{}'.format(filename))
         print(filename)
         if filename == '':
             flash('No image selected for uploading')
@@ -49,6 +45,7 @@ def upload_image(filename):
                                     filename=filename))
         else:
             print('File extention not recognized, uploading as text')
+            print(os.getcwd(), 'hallo')
             return render_template('upload_text.html', text=file.read())
 
     if request.method == 'GET':

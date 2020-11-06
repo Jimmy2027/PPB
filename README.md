@@ -35,6 +35,10 @@ root@host # ./install.sh
 
 Following this the package is installed and managed by your package manager, correspondingly it can be uninstalled via `emerge -C ppb`.
 
+### Launch the app with:
+```
+python main.py
+```
 ## Further Development
 
 Currently the software is very minimal.
