@@ -1,5 +1,5 @@
 import os
-from flask import flash, request, redirect, url_for, render_template, send_file
+from flask import flash, request, redirect, url_for, render_template, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 
 from app import app
@@ -9,6 +9,7 @@ from app import app
 image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
 video_extensions = {'mov', 'mp4'}
 
+
 def check_extension(filename, extension_list):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in extension_list
 
@@ -17,9 +18,28 @@ def check_extension(filename, extension_list):
 def upload_form():
     return "<h1>Hello there</h1>"
 
+
 @app.route('/file/<filename>', methods=['POST', 'GET'])
 def upload_image(filename):
-    if request.method == 'POST':
+    if request.method == 'GET':
+        if filename.endswith('.pdf'):
+            filename = secure_filename(filename)
+            return render_template('upload_pdf.html', filename=filename)
+        elif check_extension(filename, image_extensions):
+            print('getting image!!!')
+            filename = secure_filename(filename)
+            print(render_template('upload_image.html', filename=filename))
+            return render_template('upload_image.html', filename=filename)
+        elif check_extension(filename, video_extensions):
+            filename = secure_filename(filename)
+            return render_template('upload_video.html', filename=filename)
+        elif filename.endswith('.zip'):
+            # return render_template('upload_zip.html', filename=filename)
+            return send_from_directory(app.config['UPLOAD_FOLDER'], filename=filename)
+        else:
+            file = open('static/uploads/{}'.format(filename))
+            return render_template('upload_text.html', text=file.read())
+    elif request.method == 'POST':
         filename = request.form.get('filename')
         file = open('../static/uploads/{}'.format(filename))
         print(filename)
@@ -45,25 +65,6 @@ def upload_image(filename):
                                     filename=filename))
         else:
             print('File extention not recognized, uploading as text')
-            print(os.getcwd(), 'hallo')
-            return render_template('upload_text.html', text=file.read())
-
-    if request.method == 'GET':
-        if filename.endswith('.pdf'):
-            filename = secure_filename(filename)
-            return render_template('upload_pdf.html', filename=filename)
-        elif check_extension(filename, image_extensions):
-            print('getting image!!!')
-            filename = secure_filename(filename)
-            print(render_template('upload_image.html', filename=filename))
-            return render_template('upload_image.html', filename=filename)
-        elif check_extension(filename, video_extensions):
-            filename = secure_filename(filename)
-            return render_template('upload_video.html', filename=filename)
-        elif filename.endswith('.zip'):
-            return render_template('upload_zip.html', filename=filename)
-        else:
-            file = open('static/uploads/{}'.format(filename))
             return render_template('upload_text.html', text=file.read())
 
 
