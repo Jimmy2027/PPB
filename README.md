@@ -8,8 +8,20 @@ With pastebins becoming increasingly cluttered with ads and eye candy as well as
 PPB, the Personal PasteBin is a simple script allowing you to quickly upload and share files on your machine.
 
 ## Usage
-
+Fill the template config file under `config` and move it to `~/.config/ppb.conf`
 ```console
+user@host $ ppb -h                                                                                                                                                                                                                               (base) 
+usage: ppb [-h] [--zip_flag] file
+
+positional arguments:
+  file                  file to upload and display
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --zip_flag, -zip_flag
+                        zip folder and upload it. The folder to be zipped
+                        needs to be after the flag -z. Example: ppb -z test
+
 user@host $ ppb somefile.png
 sending incremental file list
 somefile.png
@@ -21,19 +33,11 @@ Uploaded to: https://some.url/ppb/bb04fc.png
 ```
 
 ## Installation
-
-Currently, the script can be installed automatically on Gentoo Linux systems, via the [`.gentoo` synchronously developed install specification](http://chymera.eu/docs/dominik_semesterarbeit.pdf).
-To use this functionality, you can run the following commands:
-
-```console
-user@host $ cd /some/path/you/like 
-user@host $ git clone git@github.com:TheChymera/PPB.git 
-user@host $ su -
-root@host # cd /some/path/you/like/PPB/.gentoo
-root@host # ./install.sh
 ```
-
-Following this the package is installed and managed by your package manager, correspondingly it can be uninstalled via `emerge -C ppb`.
+git clone https://github.com/Jimmy2027/PPB
+cd PPB
+pip install .
+```
 
 ### Launch the app with:
 ```
