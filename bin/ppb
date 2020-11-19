@@ -1,13 +1,13 @@
-#!/usr/bin/env python
-
 import argparse
 import configparser
 import hashlib
 import os
 import shutil
-
+import tempfile
+import zipfile
+# todo fix case when space in filename
 parser = argparse.ArgumentParser()
-parser.add_argument('--zip_file', type=str, default=None,
+parser.add_argument('--zip_flag', '-zip_flag', action='store_true', dest='zip_flag',
                     help="zip folder and upload it. The folder to be zipped needs to be "
                          "after the flag -z. Example: ppb -z test")
 parser.add_argument('file', type=str, help='file to upload and display')
@@ -30,35 +30,34 @@ if not ppb_target_host:
 if not ppb_http_path:
     ppb_http_path = ppb_path_on_host
 
-if flags.zip_file:
-    file_path = flags.zip_file
-    zip_file = flags.zip_file.split(".")[0]
-else:
-    file_path = flags.file
+file_path = flags.file
 
 file_id = hashlib.md5(file_path.encode('utf-8')).hexdigest()
 dest_file = file_id[:6]
 ext = file_path.split('.')[-1]
-dest_file += f'.{ext}'
+# if zipping file, add -zip extension
+dest_file += f'.{ext}' + '.zip' * flags.zip_flag
+in_file = dest_file
+
+curl_command = f'curl -X POST --silent --output /dev/null --show-error ' \
+               f'--fail http://109.202.220.6:5000/file/{in_file} -d filename={dest_file}'
 
 if ppb_target_host == 'local':
-    if flags.zip_file:
-        zip_command = f'zip -r {ppb_path_on_host}/{zip_file}.zip {file_path}'
+    if flags.zip_flag:
+        zip_command = f'zip -r {ppb_path_on_host}/{in_file} {file_path}'
         print(zip_command)
         os.system(zip_command)
-        curl_command = f'curl -X POST --silent --output /dev/null --show-error --fail "http://109.202.220.6:5000/file/{zip_file}.zip" -d filename={dest_file}'
-        print(curl_command)
-        os.system(curl_command)
     else:
         shutil.copyfile(file_path, os.path.join(ppb_path_on_host, dest_file))
-        curl_command = f'curl -X POST --silent --output /dev/null --show-error --fail "http://109.202.220.6:5000/file/{dest_file}" -d filename={dest_file}'
-        print(curl_command)
-        os.system(curl_command)
 else:
-    rsync_command = f'rsync -avP {file_path} {ppb_target_host}:{ppb_path_on_host}/{dest_file}'
-    print(rsync_command)
-    os.system(rsync_command)
-    curl_command = f'curl -X POST --silent --output /dev/null --show-error --fail http://109.202.220.6:5000/file/{dest_file} -d filename={dest_file}'
-    print(curl_command)
-    os.system(curl_command)
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        if flags.zip_flag:
+            print(f'zipping {file_path} to {os.path.join(tmpdirname, in_file)}')
+            zipfile.ZipFile(f'{os.path.join(tmpdirname, in_file)}', mode='w').write(f'{file_path}')
+            file_path = os.path.join(tmpdirname, in_file)
+        rsync_command = f'rsync -avP {file_path} {ppb_target_host}:{ppb_path_on_host}/{dest_file}'
+        print(rsync_command)
+        os.system(rsync_command)
 
+print(curl_command)
+os.system(curl_command)
