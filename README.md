@@ -30,6 +30,16 @@ somefile.png
 sent 223,450 bytes  received 35 bytes  148,990.00 bytes/sec
 total size is 223,298  speedup is 1.00
 Uploaded to: https://some.url/ppb/bb04fc.png
+
+user@host $ ppb -z somefolder
+sending incremental file list
+building file list ... 
+ceee466acaa5.zip
+         108 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 220,350 bytes  received 20 bytes  148,850.00 bytes/sec
+total size is 220,300  speedup is 1.00
+Uploaded to: https://some.url/ppb/ceee466acaa5.zip
 ```
 
 ## Installation
