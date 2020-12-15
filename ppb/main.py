@@ -3,6 +3,10 @@ from flask import flash, request, redirect, url_for, render_template, send_file,
 from werkzeug.utils import secure_filename
 
 from app import app
+from ppb_dataframe import update_ppb_dataframe_post, update_ppb_dataframe_get
+from datetime import datetime
+import os
+from logger.logger import log
 
 # todo have different folder for every file type
 
@@ -22,6 +26,10 @@ def upload_form():
 @app.route('/file/<filename>', methods=['POST', 'GET'])
 def upload_image(filename):
     if request.method == 'GET':
+        dateStr = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
+
+        update_ppb_dataframe_get(values={'last_get_date': dateStr}, filename=filename)
+
         if filename.endswith('.pdf'):
             filename = secure_filename(filename)
             return render_template('upload_pdf.html', filename=filename)
@@ -36,13 +44,26 @@ def upload_image(filename):
         elif filename.endswith('.zip'):
             # return render_template('upload_zip.html', filename=filename)
             return send_from_directory(app.config['UPLOAD_FOLDER'], filename=filename)
+        elif filename.endswith('.csv'):
+            import pandas as pd
+            # file = open('static/uploads/{}'.format(filename))
+            # return render_template('csv_template.html', text=pd.read_csv('static/uploads/{}'.format(filename)).to_html())
+            return "<!DOCTYPE html><html>" + pd.read_csv('static/uploads/{}'.format(filename)).to_html() + "</html>"
         else:
             file = open('static/uploads/{}'.format(filename))
             return render_template('upload_text.html', text=file.read())
     elif request.method == 'POST':
+        file_path = f'../static/uploads/{filename}'
+        ip_address = request.remote_addr
+        dateStr = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
         filename = request.form.get('filename')
-        file = open('../static/uploads/{}'.format(filename))
-        print(filename)
+        file = open(file_path)
+        file_stats = os.stat(file_path)
+
+        update_ppb_dataframe_post(values={'sender': ip_address, 'upload_date': dateStr, 'filename': filename,
+                                          'file_type': filename.split('.')[-1],
+                                          'file_size': file_stats.st_size / (1024 * 1024)})
+
         if filename == '':
             flash('No image selected for uploading')
             return redirect(request.url)
