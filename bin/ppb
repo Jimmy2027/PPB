@@ -5,6 +5,9 @@ import os
 import shutil
 import tempfile
 import zipfile
+from pathlib import Path
+
+
 # todo fix case when space in filename
 parser = argparse.ArgumentParser()
 parser.add_argument('--zip_flag', '-zip_flag', action='store_true', dest='zip_flag',
@@ -30,13 +33,26 @@ if not ppb_target_host:
 if not ppb_http_path:
     ppb_http_path = ppb_path_on_host
 
-file_path = flags.file
 
-file_id = hashlib.md5(file_path.encode('utf-8')).hexdigest()
-dest_file = file_id[:6]
-ext = file_path.split('.')[-1]
-# if zipping file, add -zip extension
-dest_file += f'.{ext}' + '.zip' * flags.zip_flag
+def get_unique_str(prefix: str = '') -> str:
+    from datetime import datetime
+    dateTimeObj = datetime.now()
+    dateStr = dateTimeObj.strftime("%Y_%m_%d_%H_%M_%S_%f")
+    if prefix:
+        return '_'.join([prefix, dateStr])
+    else:
+        return dateStr
+
+
+file_path = Path(flags.file)
+file_stem = get_unique_str(file_path.stem)
+file_id = hashlib.md5(file_stem.encode('utf-8')).hexdigest()
+dest_file = file_id[:12]
+ext = file_path.suffix
+
+# if zipping file, add .zip extension
+dest_file += f'{ext}' + '.zip' * flags.zip_flag
+
 in_file = dest_file
 
 curl_command = f'curl -X POST --silent --output /dev/null --show-error ' \
