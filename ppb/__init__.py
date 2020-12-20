@@ -1,1 +1,1 @@
-from logger.logger import log
+from ppb.logger.logger import log
