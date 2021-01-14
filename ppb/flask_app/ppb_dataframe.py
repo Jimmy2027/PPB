@@ -4,10 +4,16 @@ from pathlib import Path
 import pandas as pd
 
 from ppb.logger.logger import log
+import numpy as np
+
+DF_PATH = Path(__file__).parent.parent / 'ppd_dataframe.csv'
 
 
 def update_ppb_dataframe_post(values: typing.Mapping[str, any]) -> None:
-    df_path = Path(__file__).parent.parent / 'ppd_dataframe.csv'
+    df_path = DF_PATH
+
+    # todo search for all files in static path and add them to df, set lifetime to 7
+
     if not df_path.exists():
         df = pd.DataFrame([values])
     else:
@@ -16,20 +22,36 @@ def update_ppb_dataframe_post(values: typing.Mapping[str, any]) -> None:
         df = df[df['filename'] != filename]
 
         df = df.append(values, ignore_index=True)
+
     df.to_csv(df_path, index=False)
 
 
-def update_ppb_dataframe_get(values: typing.Mapping[str, any], filename: str) -> None:
-    """
-    Updates the ppb_datafram on GET request.
-    """
-    df_path = Path(__file__).parent.parent / 'ppd_dataframe.csv'
+def update_seen_by(df_row, ip_address: str) -> str:
+    log.info(df_row)
+    if df_row['seen_by'].isnull().values.any():
+        return df_row['sender'].item()
+    sep = ', '
+    spl = df_row['seen_by'].item().split(sep)
+    current_ips = {f'{ip}' for ip in spl}
+    current_ips.add(ip_address)
+    return sep.join(list(current_ips))
 
+
+def update_ppb_dataframe_get(values: typing.Mapping[str, any], filename: str, ip_address: str) -> None:
+    """
+    Updates the ppb_dataframe on GET request.
+    """
+    df_path = DF_PATH
+    log.info(f'updating ppb_dataframe for file {filename}.')
     if df_path.exists():
-        # if filename in
         df = pd.read_csv(df_path)
-        if not df.empty and filename in df['filename']:
+        if not df.empty and filename in df['filename'].tolist():
             log.info(df.loc[df['filename'] == filename])
+            if 'seen_by' not in df.columns:
+                df['seen_by'] = np.nan
+
+            df.loc[df['filename'] == filename, 'seen_by'] = update_seen_by(df.loc[df['filename'] == filename],
+                                                                           ip_address=ip_address)
             if 'view_counts' not in df.loc[df['filename'] == filename].columns \
                     or any(df.loc[df['filename'] == filename, 'view_counts'].isna()):
                 df.loc[df['filename'] == filename, 'view_counts'] = 1
@@ -41,3 +63,8 @@ def update_ppb_dataframe_get(values: typing.Mapping[str, any], filename: str) ->
             for k, v in values.items():
                 df.loc[df['filename'] == filename, k] = v
             df.to_csv(df_path, index=False)
+        else:
+            log.info(f'{filename} not found in ppb_dataframe.')
+
+    else:
+        log.info(f'{df_path} not found')
