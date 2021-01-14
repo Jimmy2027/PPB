@@ -1,7 +1,12 @@
 <!doctype html>
 
-    <div>
-        <img src="{{ url_for('display_image', filename=filename) }}" width="90%" height="90%">
-    </div>
+{% extends "layout.html" %}
+{% block body %}
+<div>
+    <img src="{{ url_for('display_image', filename=filename) }}" width="90%" height="90%">
+</div>
+{% endblock %}
+
+
 
 

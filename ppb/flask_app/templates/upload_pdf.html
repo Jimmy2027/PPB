@@ -1,6 +1,9 @@
-<!doctype html>
 
-    <object data="{{ url_for('show_static_pdf', filename=filename) }}" type="application/pdf"
-            style="min-height:100vh;width:100%"></object>
+{% extends "layout.html" %}
+{% block body %}
+   <object data="{{ url_for('static', filename=filename) }}" type="application/pdf"
+        style="min-height:100vh;width:100%"></object>
+{% endblock %}
+
 
 

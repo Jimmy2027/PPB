@@ -3,27 +3,30 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-from flask import request, redirect, url_for, render_template, send_from_directory
+from flask import request, redirect, url_for, render_template, send_from_directory, send_file
 from werkzeug.utils import secure_filename
 
 from app import app
 from ppb import log
 from ppb_dataframe import update_ppb_dataframe_post, update_ppb_dataframe_get
+from ppb.utils import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, check_extension, GIT_ICON_HTML
 
-image_extensions = {'png', 'jpg', 'jpeg', 'gif'}
-video_extensions = {'mov', 'mp4'}
-
-
-def check_extension(filename, extension_list):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in extension_list
+image_extensions = IMAGE_EXTENSIONS
+video_extensions = VIDEO_EXTENSIONS
 
 
-@app.route('/file/<filename>', methods=['POST', 'GET'])
+@app.route('/')
+def upload_form():
+    return render_template('root_template.html')
+
+
+@app.route('/<filename>', methods=['POST', 'GET'])
 def upload_image(filename):
     if request.method == 'GET':
         dateStr = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
+        ip_address = request.remote_addr
 
-        update_ppb_dataframe_get(values={'last_get_date': dateStr}, filename=filename)
+        update_ppb_dataframe_get(values={'last_get_date': dateStr}, filename=filename, ip_address=ip_address)
         log.info(f"reading static/uploads/{filename}")
         if filename.endswith('.pdf'):
             filename = secure_filename(filename)
@@ -38,12 +41,15 @@ def upload_image(filename):
             log.info(f'Getting {app.config["UPLOAD_FOLDER"]}/{filename}')
             return send_from_directory(app.config['UPLOAD_FOLDER'], filename=filename)
         elif filename.endswith('.csv'):
-            return "<!DOCTYPE html><html>" + pd.read_csv('static/uploads/{}'.format(filename)).to_html() + "</html>"
+            return render_template(pd.read_csv('static/uploads/{}'.format(filename)).to_html())
+            # return "<!DOCTYPE html><html>" + GIT_ICON_HTML + pd.read_csv(
+            #     'static/uploads/{}'.format(filename)).to_html() + "</html>"
 
         else:
             with open(f'static/uploads/{filename}', 'r') as f:
                 file = f.read()
-            return "<!DOCTYPE html><html>" + file + "</html>"
+            return render_template('upload_text.html', text=file)
+
 
     elif request.method == 'POST':
         file_path = Path(__file__).parent / f'static/uploads/{filename}'
@@ -64,10 +70,15 @@ def upload_image(filename):
 
 @app.route('/display/<filename>')
 def display_image(filename):
-    print(filename)
     return redirect(url_for('static', filename='uploads/' + filename), code=301)
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico',
+                               mimetype='image/vnd.microsoft.icon')
+
+
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port=2096)
     # app.run(debug=True)

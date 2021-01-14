@@ -1,10 +1,11 @@
-<!DOCTYPE html>
-<html>
-
+{% extends "layout.html" %}
+{% block body %}
 <body>
-  <video width="90%" height="90%" controls>
+<video width="90%" height="90%" controls>
     <source src="{{ url_for('display_image', filename=filename) }}" type="video/mp4">
     Your browser does not support the video tag.
-  </video>
+</video>
 </body>
-</html>
+{% endblock %}
+
+
