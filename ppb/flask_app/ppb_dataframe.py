@@ -5,11 +5,15 @@ import pandas as pd
 
 from ppb.logger.logger import log
 import numpy as np
+import json
+import os
 
 DF_PATH = Path(__file__).parent.parent / 'ppd_dataframe.csv'
 
 
-def update_ppb_dataframe_post(values: typing.Mapping[str, any]) -> None:
+def update_ppb_dataframe_post(values: dict, file_path: Path) -> None:
+    metadata = get_metadata(file_path)
+    values = {**values, **metadata}
     df_path = DF_PATH
 
     # todo search for all files in static path and add them to df, set lifetime to 7
@@ -24,6 +28,19 @@ def update_ppb_dataframe_post(values: typing.Mapping[str, any]) -> None:
         df = df.append(values, ignore_index=True)
 
     df.to_csv(df_path, index=False)
+
+
+def get_metadata(file_path: Path):
+    """
+    Reads metadata from metadata file and deletes it.
+    """
+    metadata_path = file_path.with_suffix('.json')
+    log.info(f'reading metadata file {metadata_path}')
+    with open(metadata_path) as json_file:
+        metadata = json.load(json_file)
+    log.info(f'Deleting metadata file {metadata_path}')
+    os.remove(metadata_path)
+    return metadata
 
 
 def update_seen_by(df_row, ip_address: str) -> str:

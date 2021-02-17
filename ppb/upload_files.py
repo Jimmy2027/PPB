@@ -8,13 +8,21 @@ from pygments import highlight
 from pygments.formatters.html import HtmlFormatter
 from pygments.lexers import guess_lexer_for_filename
 from pygments.lexers.shell import BashLexer
-
+import json
 from ppb import log
 from ppb.utils import check_extension, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, COMPRESSION_EXTENSIONS
+from pathlib import Path
 
 
-def upload_file_remote(dest_file, ext, file_path, flags, in_file, ppb_path_on_host, ppb_target_host) -> None:
+def upload_file_remote(dest_file: Path, ext: str, file_path: Path, flags, in_file, ppb_path_on_host, ppb_target_host,
+                       metadata: dict) -> None:
+    """
+    dest_file: destination filename + extension (example: 77a80349869f.png)
+    ext: file extension
+    file_path: path to input file.
+    """
     with tempfile.TemporaryDirectory() as tmpdirname:
+        send_metadata(dest_file, metadata, ppb_path_on_host, ppb_target_host, tmpdirname)
         tempfile_path = os.path.join(tmpdirname, in_file)
         if flags.zip_flag:
 
@@ -54,7 +62,20 @@ def upload_file_remote(dest_file, ext, file_path, flags, in_file, ppb_path_on_ho
         os.system(rsync_command)
 
 
-def upload_file_local(dest_file, file_path, flags, in_file, ppb_path_on_host) -> None:
+def send_metadata(dest_file, metadata: dict, ppb_path_on_host, ppb_target_host, tmpdirname):
+    """
+    Sends metadata json file to ppb host.
+    """
+    out_metadata_filename = dest_file.stem + '.json'
+    metadata_file_path = os.path.join(tmpdirname, out_metadata_filename)
+    with open(metadata_file_path, 'w') as outfile:
+        json.dump(metadata, outfile)
+    rsync_metadata_command = f'rsync -avP {metadata_file_path} {ppb_target_host}:{ppb_path_on_host}/{out_metadata_filename}'
+    log.info(rsync_metadata_command)
+    os.system(rsync_metadata_command)
+
+
+def upload_file_local(dest_file, file_path, flags, in_file, ppb_path_on_host, metadata: dict) -> None:
     if flags.zip_flag:
         zip_command = f'zip -r {ppb_path_on_host}/{in_file} {file_path}'
         log.info(zip_command)
