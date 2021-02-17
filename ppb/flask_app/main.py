@@ -3,13 +3,13 @@ from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
-from flask import request, redirect, url_for, render_template, send_from_directory, send_file
+from flask import request, redirect, url_for, render_template, send_from_directory
 from werkzeug.utils import secure_filename
 
 from app import app
 from ppb import log
+from ppb.utils import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, check_extension
 from ppb_dataframe import update_ppb_dataframe_post, update_ppb_dataframe_get
-from ppb.utils import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, check_extension, GIT_ICON_HTML
 
 image_extensions = IMAGE_EXTENSIONS
 video_extensions = VIDEO_EXTENSIONS
@@ -29,8 +29,8 @@ def upload_image(filename):
         update_ppb_dataframe_get(values={'last_get_date': dateStr}, filename=filename, ip_address=ip_address)
         log.info(f"reading static/uploads/{filename}")
         if filename.endswith('.pdf'):
-            filename = secure_filename(filename)
-            return render_template('upload_pdf.html', filename=filename)
+            return redirect(url_for('static', filename=filename), code=301)
+
         elif check_extension(filename, image_extensions):
             filename = secure_filename(filename)
             return render_template('upload_image.html', filename=filename)
@@ -50,7 +50,6 @@ def upload_image(filename):
                 file = f.read()
             return render_template('upload_text.html', text=file)
 
-
     elif request.method == 'POST':
         file_path = Path(__file__).parent / f'static/uploads/{filename}'
         if file_path.exists():
@@ -62,7 +61,7 @@ def upload_image(filename):
             log.debug(f'Uploading file {filename}.')
             update_ppb_dataframe_post(values={'sender': ip_address, 'upload_date': dateStr, 'filename': filename,
                                               'file_type': filename.split('.')[-1],
-                                              'file_size': file_stats.st_size / (1024 * 1024)})
+                                              'file_size': file_stats.st_size / (1024 * 1024)}, file_path=file_path)
             return 'sure thing'
         else:
             return 'File not found.'
