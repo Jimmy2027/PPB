@@ -1,5 +1,9 @@
-# HK, 17.12.20
+import os
+import tempfile
+from pathlib import Path
 from typing import Set
+
+from ppb import log
 
 IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 VIDEO_EXTENSIONS = {'mov', 'mp4'}
@@ -23,3 +27,24 @@ def get_unique_str(prefix: str = '') -> str:
         return '_'.join([prefix, dateStr])
     else:
         return dateStr
+
+
+def maybe_getfrom_ppb(download_url: str, out_path: Path):
+    """Download from ppb and extract to out_path if not already there."""
+    filename = Path(download_url).stem
+    if not out_path.exists():
+        out_path.mkdir()
+        log.info(f'{out_path} does not exist. Downloading...')
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            wget_command = f'wget {download_url} -P {tmpdirname}/'
+            log.info(f'Getting {download_url}.')
+            os.system(wget_command)
+
+            unzip_command = f'unzip {tmpdirname}/{filename + ".zip"} -d {out_path}/'
+            os.system(unzip_command)
+    else:
+        log.info(f'{out_path} exists. Skipping...')
+
+
+if __name__ == '__main__':
+    maybe_getfrom_ppb('https://ppb.hendrikklug.xyz/4959123face8.zip', Path('~/polymnistmodels').expanduser())
