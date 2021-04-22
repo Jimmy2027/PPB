@@ -41,8 +41,9 @@ def upload_image(filename):
             log.info(f'Getting {app.config["UPLOAD_FOLDER"]}/{filename}')
             return send_from_directory(app.config['UPLOAD_FOLDER'], filename=filename)
         elif filename.endswith('.csv'):
-            return render_template(pd.read_csv('static/uploads/{}'.format(filename)).to_html())
-            # return "<!DOCTYPE html><html>" + GIT_ICON_HTML + pd.read_csv(
+            log.info('Uploading as csv.')
+            return render_template('upload_csv.html', text=pd.read_csv('static/uploads/{}'.format(filename)).to_html())
+            # return "<!DOCTYPE html><html>"  + pd.read_csv(
             #     'static/uploads/{}'.format(filename)).to_html() + "</html>"
 
         else:
