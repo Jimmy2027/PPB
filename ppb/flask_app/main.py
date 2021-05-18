@@ -29,7 +29,7 @@ def upload_image(filename):
         update_ppb_dataframe_get(values={'last_get_date': dateStr}, filename=filename, ip_address=ip_address)
         log.info(f"reading static/uploads/{filename}")
         if filename.endswith('.pdf'):
-            return redirect(url_for('static', filename=filename), code=301)
+            return redirect(f'static/uploads/{filename}', code=301)
 
         elif check_extension(filename, image_extensions):
             filename = secure_filename(filename)
