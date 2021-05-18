@@ -44,9 +44,7 @@ Uploaded to: https://some.url/ppb/ceee466acaa5.zip
 
 ## Installation
 ```
-git clone https://github.com/Jimmy2027/PPB
-cd PPB
-pip install .
+pip install git+https://github.com/Jimmy2027/PPB.git
 ```
 
 ### Launch the app with:
