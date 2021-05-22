@@ -6,7 +6,8 @@ from ppb import upload
 
 def test_upload():
     test_file = Path(__file__).parent / 'test_file.txt'
-    upload(file_path=test_file)
+    url = upload(file_path=test_file)
+    print(f'This is my url: {url}')
 
 
 if __name__ == '__main__':
