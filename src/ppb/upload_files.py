@@ -11,9 +11,9 @@ from pygments.formatters.html import HtmlFormatter
 from pygments.lexers import guess_lexer_for_filename
 from pygments.lexers.shell import BashLexer
 
-from ppb import log
-from ppb.utils import check_extension, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, COMPRESSION_EXTENSIONS
-from ppb.utils import get_unique_str
+from src.ppb import log
+from utils import check_extension, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, COMPRESSION_EXTENSIONS
+from utils import get_unique_str
 
 
 def upload(file_path: Path, zip_flag: bool = False, plain: bool = False, description: str = None, lifetime: int = 20):

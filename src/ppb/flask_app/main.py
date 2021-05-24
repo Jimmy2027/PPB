@@ -7,8 +7,8 @@ from flask import request, redirect, url_for, render_template, send_from_directo
 from werkzeug.utils import secure_filename
 
 from app import app
-from ppb import log
-from ppb.utils import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, check_extension
+from src.ppb import log
+from utils import IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, check_extension
 from ppb_dataframe import update_ppb_dataframe_post, update_ppb_dataframe_get
 
 image_extensions = IMAGE_EXTENSIONS

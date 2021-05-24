@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 
-from ppb import upload
+from src.ppb import upload
 
 
 def test_upload():

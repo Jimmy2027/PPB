@@ -1,10 +1,9 @@
-# RA, 2020-12-01
-
-import os
-import logging
-import pathlib
 import datetime
-import multiprocessing, threading
+import logging
+import multiprocessing
+import os
+import pathlib
+import threading
 import warnings
 
 # This doesn't help 'remotely'
@@ -21,7 +20,7 @@ logging.getLogger("matplotlib").setLevel(logging.WARNING)
 LOG_FILE = (pathlib.Path(__file__).parent / "logs")
 LOG_FILE.mkdir(exist_ok=True, parents=True)
 
-for f in sorted(LOG_FILE.glob("*-*-*.log"))[:-101]:
+for f in sorted(LOG_FILE.glob("*-*-*.log"))[:-10]:
     os.remove(f)
 
 LOG_FILE = LOG_FILE / datetime.datetime.now(tz=datetime.timezone.utc).strftime("%Z-%Y%m%d-%H%M%S")

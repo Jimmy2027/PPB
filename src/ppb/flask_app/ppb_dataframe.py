@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from ppb.logger.logger import log
+from logger.logger import log
 import numpy as np
 import json
 import os

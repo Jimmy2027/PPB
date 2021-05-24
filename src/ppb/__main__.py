@@ -2,7 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from ppb import upload
+from src.ppb import upload
 
 
 def main():
