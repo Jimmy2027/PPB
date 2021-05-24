@@ -3,7 +3,7 @@ import tempfile
 from pathlib import Path
 from typing import Set
 
-from src.ppb import log
+from ppb import log
 
 IMAGE_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 VIDEO_EXTENSIONS = {'mov', 'mp4'}

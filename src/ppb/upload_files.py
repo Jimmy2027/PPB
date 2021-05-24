@@ -11,7 +11,7 @@ from pygments.formatters.html import HtmlFormatter
 from pygments.lexers import guess_lexer_for_filename
 from pygments.lexers.shell import BashLexer
 
-from src.ppb import log
+from ppb import log
 from utils import check_extension, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, COMPRESSION_EXTENSIONS
 from utils import get_unique_str
 

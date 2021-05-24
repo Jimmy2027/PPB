@@ -1,12 +1,12 @@
+import json
+import os
 import typing
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
-from logger.logger import log
-import numpy as np
-import json
-import os
+from ppb import log
 
 DF_PATH = Path(__file__).parent.parent / 'ppd_dataframe.csv'
 
